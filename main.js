@@ -7,8 +7,23 @@ var addBtn = document.querySelector("#click");
 var inputs=document.querySelectorAll(".inputs")
 var search=document.querySelector("#search");
 var nameError=document.querySelector(".nameError");
+var catError=document.querySelector(".catError");
+var priceError=document.querySelector(".priceError")
+var capError=document.querySelector(".capError")
+
 var isNameTrue=false
-var courses=[]
+var isCategoryTrue=false
+var isPriceTrue=false
+var isCapTrue=false
+
+if(JSON.parse(localStorage.getItem("courses"))== null){
+           var courses=[];
+}else{
+  courses = JSON.parse(localStorage.getItem("courses"))
+  displayData()
+}
+
+
 addBtn.addEventListener("click", function (e) {
   e.preventDefault()
   addCourse()
@@ -25,7 +40,15 @@ function addCourse(){
         capacity: courseCapacity.value,
       }
       courses.push(course)
-      console.log(courses)
+      localStorage.setItem("courses",JSON.stringify(courses))
+      Swal.fire({
+        position: "top-end",
+        icon: "success",
+        title: "course added successfully",
+        showConfirmButton: false,
+        timer: 3000
+      });
+      
 }
 function  clearInputs(){
     
@@ -53,8 +76,44 @@ function displayData(){
 }
 
 function deleteCourse(i){
-courses.splice(i, 1)
-displayData();
+  const swalWithBootstrapButtons = Swal.mixin({
+    customClass: {
+      confirmButton: "btn btn-success",
+      cancelButton: "btn btn-danger"
+    },
+    buttonsStyling: false
+  });
+  swalWithBootstrapButtons.fire({
+    title: "Are you sure?",
+    text: "You won't be able to revert this!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes, delete it!",
+    cancelButtonText: "No, cancel!",
+    reverseButtons: true
+  }).then((result) => {
+    if (result.isConfirmed) {
+      courses.splice(i,1)
+      localStorage.setItem("courses",JSON.stringify(courses))
+      displayData();
+      swalWithBootstrapButtons.fire({
+       
+        title: "Deleted!",
+        text: "Your file has been deleted.",
+        icon: "success"
+      });
+    } else if (
+      /* Read more about handling dismissals below */
+      result.dismiss === Swal.DismissReason.cancel
+    ) {
+      swalWithBootstrapButtons.fire({
+        title: "Cancelled",
+        text: "Your imaginary file is safe :)",
+        icon: "error"
+      });
+    }
+  });
+
 }
 
 search.addEventListener("keyup",function(e){
@@ -94,10 +153,71 @@ if(pattern.test(courseName.value))
   nameError.style.cssText="display:block"
  isNameTrue=false
 }
-if(isNameTrue){
-  addBtn.removeAttribute("disabled")
+
+
+
+})
+
+courseCategory.addEventListener("keyup",function(){
+  var pattern = /^[A-Z][a-z]{2,9}$/;
+if(pattern.test(courseCategory.value))
+{
+  if(courseCategory.classList.contains("is-invalid"))
+  courseCategory.classList.remove("is-invalid")
+  courseCategory.classList.add("is-valid")
+  catError.style.cssText="display:none"
+  isCategoryTrue=true
+ 
 }else{
-  addBtn.setAttribute("disabled","disabled")
+  if(courseCategory.classList.contains("is-valid"))
+  courseCategory.classList.remove("is-valid")
+  courseCategory.classList.add("is-invalid")
+  catError.style.cssText="display:block"
+  isCategoryTrue=false
+ 
+}
+
+})
+
+coursePrice.addEventListener("keyup",function(){
+  var pattern = /^([1-8][0-9][0-9]|900)$/gm
+if(pattern.test(coursePrice.value))
+{
+  if(coursePrice.classList.contains("is-invalid"))
+  coursePrice.classList.remove("is-invalid")
+  coursePrice.classList.add("is-valid")
+ priceError.style.cssText="display:none"
+  isPriceTrue=true
+ 
+}else{
+  if(coursePrice.classList.contains("is-valid"))
+  coursePrice.classList.remove("is-valid")
+  coursePrice.classList.add("is-invalid")
+  priceError.style.cssText="display:block"
+  isPriceTrue=false
 }
 })
 
+courseCapacity.addEventListener("keyup",function(){
+  var pattern = /^([1-2][0-9][0-9]|300)$/gm
+if(pattern.test(courseCapacity.value))
+{
+  if(courseCapacity.classList.contains("is-invalid"))
+  courseCapacity.classList.remove("is-invalid")
+  courseCapacity.classList.add("is-valid")
+ capError.style.cssText="display:none"
+  isCapTrue=true
+ 
+}else{
+  if(courseCapacity.classList.contains("is-valid"))
+  courseCapacity.classList.remove("is-valid")
+  courseCapacity.classList.add("is-invalid")
+  capError.style.cssText="display:block"
+  isCapTrue=false
+}
+if(isNameTrue && isCategoryTrue && isPriceTrue && isCapTrue){
+  addBtn.removeAttribute("disabled")
+}else{
+  addBtn.setAttribute("disabled", "disabled")
+}
+})
